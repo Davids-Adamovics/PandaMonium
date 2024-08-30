@@ -75,11 +75,9 @@ public class MovementStateManager : MonoBehaviour
             Debug.LogError("Camera Transform is not assigned.");
         }
 
-        // Reset inputs to ensure no initial movement
         hzInput = 0;
         vInput = 0;
 
-        // Set the initial state to Idle
         Debug.Log("Initializing MovementStateManager. Setting initial state to Idle.");
         SwitchState(Idle);
     }
@@ -99,18 +97,14 @@ public class MovementStateManager : MonoBehaviour
             return;
         }
 
-        // Handle camera rotation
         HandleCameraRotation();
-
-        // Ensure inputs are correctly reset or initialized
         getDirectionAndMove();
         animator.SetFloat("hzInput", hzInput); // Ensure initial input is zero
-        animator.SetFloat("vInput", vInput); // Ensure initial input is zero
+        animator.SetFloat("vInput", vInput); 
 
         currentState.UpdateState(this);
         ApplyGravity();
 
-        // Apply the state change after UpdateState to prevent recursion
         if (nextState != null && nextState != currentState)
         {
             SwitchState(nextState);
@@ -131,7 +125,6 @@ public class MovementStateManager : MonoBehaviour
         Debug.Log("Switched to state: " + state.GetType().Name);
     }
 
-    // New method to handle state change requests
     public void RequestStateChange(MovementBaseState newState)
     {
         nextState = newState;
@@ -154,14 +147,13 @@ public class MovementStateManager : MonoBehaviour
         {
             Quaternion targetRotation = Quaternion.LookRotation(direction);
 
-            // Apply rotation offset depending on the current state
             if (currentState is RunState)
             {
-                targetRotation *= Quaternion.Euler(0, 35f, 0); // Adjust the offset angle as needed
+                targetRotation *= Quaternion.Euler(0, 35f, 0); 
             }
             else if (currentState is CrouchState)
             {
-                targetRotation *= Quaternion.Euler(0, 35f, 0); // Adjust the offset angle as needed
+                targetRotation *= Quaternion.Euler(0, 35f, 0);
             }
 
             person.transform.rotation = Quaternion.Slerp(person.transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
@@ -172,7 +164,6 @@ public class MovementStateManager : MonoBehaviour
 
     public void ApplyCrouchRotationOffset(float offset)
     {
-        // Keep applying the offset to the current forward direction while crouching
         Quaternion rotationOffset = Quaternion.Euler(0, offset, 0);
         Quaternion targetRotation = Quaternion.LookRotation(direction) * rotationOffset;
 
@@ -210,10 +201,8 @@ public class MovementStateManager : MonoBehaviour
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
-        // Rotate the player horizontally based on mouse X movement
         transform.Rotate(Vector3.up * mouseX);
-
-        // Rotate the camera vertically based on mouse Y movement
+        
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, verticalLookLimitMin, verticalLookLimitMax);
 
