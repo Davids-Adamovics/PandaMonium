@@ -4,7 +4,7 @@ using UnityEngine.AI;
 public class Enemy_AI : MonoBehaviour
 {
     public NavMeshAgent agent;
-    public Animator animator; // Add this line
+    public Animator animator;
 
     public Transform player;
 
@@ -30,13 +30,12 @@ public class Enemy_AI : MonoBehaviour
     {
         player = GameObject.Find("Player").transform;
         agent = GetComponent<NavMeshAgent>();
-        animator = GetComponent<Animator>(); // Add this line
-        agent.autoTraverseOffMeshLink = false; // Disable auto traversal of off-mesh links
+        animator = GetComponent<Animator>(); 
+        agent.autoTraverseOffMeshLink = false;
     }
 
     private void Update()
     {
-        //Check for sight and attack range
         playerInSightRange = Physics.CheckSphere(transform.position, sightRange, whatIsPlayer);
         playerInAttackRange = Physics.CheckSphere(transform.position, attackRange, whatIsPlayer);
 
@@ -52,7 +51,6 @@ public class Enemy_AI : MonoBehaviour
         if (walkPointSet)
             agent.SetDestination(walkPoint);
 
-        // Set the animation for patrolling
         animator.SetBool("IsPatrolling", true);
         animator.SetBool("IsChasing", false);
         animator.SetBool("IsAttacking", false);
@@ -105,7 +103,6 @@ public class Enemy_AI : MonoBehaviour
 
         if (!alreadyAttacked)
         {
-            // Attack code here
             Vector3 projectileSpawnPosition = transform.position + new Vector3(0, 1, 0); // Adjust the spawn position if needed
             Rigidbody rb = Instantiate(projectile, projectileSpawnPosition, Quaternion.identity).GetComponent<Rigidbody>();
             rb.AddForce(transform.forward * 32f + transform.up * 8f, ForceMode.Impulse);
