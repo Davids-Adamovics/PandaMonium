@@ -100,7 +100,7 @@ public class MovementStateManager : MonoBehaviour
         HandleCameraRotation();
         getDirectionAndMove();
         animator.SetFloat("hzInput", hzInput); // Ensure initial input is zero
-        animator.SetFloat("vInput", vInput); 
+        animator.SetFloat("vInput", vInput);
 
         currentState.UpdateState(this);
         ApplyGravity();
@@ -143,13 +143,15 @@ public class MovementStateManager : MonoBehaviour
 
         direction = transform.forward * vInput + transform.right * hzInput;
 
+        Debug.Log($"Horizontal Input: {hzInput}, Vertical Input: {vInput}, Direction: {direction}");
+
         if (direction.magnitude > 0)
         {
             Quaternion targetRotation = Quaternion.LookRotation(direction);
 
             if (currentState is RunState)
             {
-                targetRotation *= Quaternion.Euler(0, 35f, 0); 
+                targetRotation *= Quaternion.Euler(0, 35f, 0);
             }
             else if (currentState is CrouchState)
             {
@@ -161,6 +163,7 @@ public class MovementStateManager : MonoBehaviour
 
         controller.Move(direction.normalized * moveSpeed * Time.deltaTime);
     }
+
 
     public void ApplyCrouchRotationOffset(float offset)
     {
@@ -202,7 +205,7 @@ public class MovementStateManager : MonoBehaviour
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
         transform.Rotate(Vector3.up * mouseX);
-        
+
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, verticalLookLimitMin, verticalLookLimitMax);
 

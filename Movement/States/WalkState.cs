@@ -8,6 +8,7 @@ public class WalkState : MovementBaseState
     public override void EnterState(MovementStateManager movement)
     {
         movement.animator.SetBool("Walking", true);
+        movement.moveSpeed = 3; // Set an appropriate walking speed
         Debug.Log("Entered Walk State");
 
         // Find and reference the CameraShake component
@@ -39,18 +40,18 @@ public class WalkState : MovementBaseState
             movement.previousState = this;
             ExitState(movement, movement.RunSlash);
         }
-        // SLASH + WALK
-        if (Input.GetKeyDown(KeyCode.Mouse0) && !Input.GetKey(KeyCode.LeftShift) && movement.direction.magnitude >= 0.1f)
+        // RANDOM SLASH (WalkSlash or StandSlash)
+        else if (Input.GetKeyDown(KeyCode.Mouse0))
         {
             movement.previousState = this;
-            movement.RequestStateChange(movement.WalkSlash);
-        }
-
-        // SLASH + IDLE
-        else if (Input.GetKeyDown(KeyCode.Mouse0) && movement.direction.magnitude < 0.1f)
-        {
-            movement.previousState = this;
-            ExitState(movement, movement.StandSlash);
+            if (Random.value > 0.5f) // 50% chance
+            {
+                ExitState(movement, movement.WalkSlash); // Transition to WalkSlash
+            }
+            else
+            {
+                ExitState(movement, movement.StandSlash); // Transition to StandSlash
+            }
         }
         // JUMP
         else if (Input.GetKeyDown(KeyCode.Space))

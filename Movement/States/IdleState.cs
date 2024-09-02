@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class IdleState : MovementBaseState
@@ -18,7 +17,15 @@ public class IdleState : MovementBaseState
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
             movement.previousState = this;
-            ExitState(movement, movement.StandSlash);
+            // Randomly select StandSlash or WalkSlash
+            if (Random.value > 0.5f) // 50% chance
+            {
+                ExitState(movement, movement.StandSlash); // Transition to StandSlash
+            }
+            else
+            {
+                ExitState(movement, movement.WalkSlash); // Transition to WalkSlash
+            }
             return; // Immediately return to ensure no other transitions happen in the same frame
         }
 
