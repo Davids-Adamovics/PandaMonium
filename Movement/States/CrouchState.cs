@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class CrouchState : MovementBaseState
 {
-    // The offset angle to rotate the character while crouching
     private float crouchRotationOffset = 35f;
 
     public override void EnterState(MovementStateManager movement)
@@ -15,7 +14,6 @@ public class CrouchState : MovementBaseState
 
     public override void UpdateState(MovementStateManager movement)
     {
-        // Rotate the character with a 30-degree offset to the right
         movement.ApplyCrouchRotationOffset(crouchRotationOffset);
 
         if (Input.GetKey(KeyCode.LeftShift)) ExitState(movement, movement.Run);

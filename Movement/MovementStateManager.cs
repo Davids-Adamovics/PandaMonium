@@ -54,6 +54,14 @@ public class MovementStateManager : MonoBehaviour
     // Rotation speed variable
     [SerializeField] private float rotationSpeed = 10f;
 
+    // Delay before mouse movement is registered
+    private float startDelay = 17f;
+    private float startTime;
+
+    public void StartMyCoroutine(IEnumerator coroutine)
+    {
+        StartCoroutine(coroutine);
+    }
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
@@ -78,10 +86,11 @@ public class MovementStateManager : MonoBehaviour
         hzInput = 0;
         vInput = 0;
 
+        startTime = Time.time;
+
         Debug.Log("Initializing MovementStateManager. Setting initial state to Idle.");
         SwitchState(Idle);
     }
-
 
     void Update()
     {
@@ -97,9 +106,13 @@ public class MovementStateManager : MonoBehaviour
             return;
         }
 
-        HandleCameraRotation();
+        if (Time.time >= startTime + startDelay)
+        {
+            HandleCameraRotation();
+        }
+
         getDirectionAndMove();
-        animator.SetFloat("hzInput", hzInput); // Ensure initial input is zero
+        animator.SetFloat("hzInput", hzInput);
         animator.SetFloat("vInput", vInput);
 
         currentState.UpdateState(this);
@@ -111,7 +124,6 @@ public class MovementStateManager : MonoBehaviour
             nextState = null;
         }
     }
-
 
     public void SwitchState(MovementBaseState state)
     {
@@ -163,7 +175,6 @@ public class MovementStateManager : MonoBehaviour
 
         controller.Move(direction.normalized * moveSpeed * Time.deltaTime);
     }
-
 
     public void ApplyCrouchRotationOffset(float offset)
     {

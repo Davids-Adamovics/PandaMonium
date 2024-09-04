@@ -13,23 +13,20 @@ public class IdleState : MovementBaseState
 
     public override void UpdateState(MovementStateManager movement)
     {
-        // Start slash immediately when mouse button is clicked
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
             movement.previousState = this;
-            // Randomly select StandSlash or WalkSlash
-            if (Random.value > 0.5f) // 50% chance
+            if (Random.value > 0.5f) 
             {
-                ExitState(movement, movement.StandSlash); // Transition to StandSlash
+                ExitState(movement, movement.StandSlash); 
             }
             else
             {
-                ExitState(movement, movement.WalkSlash); // Transition to WalkSlash
+                ExitState(movement, movement.WalkSlash);
             }
-            return; // Immediately return to ensure no other transitions happen in the same frame
+            return;
         }
 
-        // Check movement to switch to running or walking
         if (movement.direction.magnitude > 0.1f)
         {
             if (Input.GetKey(KeyCode.LeftShift))

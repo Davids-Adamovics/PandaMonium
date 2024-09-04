@@ -8,10 +8,9 @@ public class WalkState : MovementBaseState
     public override void EnterState(MovementStateManager movement)
     {
         movement.animator.SetBool("Walking", true);
-        movement.moveSpeed = 3; // Set an appropriate walking speed
+        movement.moveSpeed = 3;
         Debug.Log("Entered Walk State");
 
-        // Find and reference the CameraShake component
         cameraShake = GameObject.FindObjectOfType<CameraShake>();
         if (cameraShake == null)
         {

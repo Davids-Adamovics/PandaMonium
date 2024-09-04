@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class RunState : MovementBaseState
 {
-    private float runRotationOffset = 35f; // Adjust as needed
+    private float runRotationOffset = 35f; 
 
     public override void EnterState(MovementStateManager movement)
     {
@@ -18,12 +18,11 @@ public class RunState : MovementBaseState
     {
         movement.dust.Play();
 
-        // Immediately transition to RunSlash if Shift + Mouse0 is pressed
         if (Input.GetKeyDown(KeyCode.Mouse0) && Input.GetKey(KeyCode.LeftShift))
         {
             movement.previousState = this;
             ExitState(movement, movement.RunSlash);
-            return; // Immediately return to prevent other transitions
+            return; 
         }
 
         if (Input.GetKeyUp(KeyCode.LeftShift))

@@ -19,17 +19,15 @@ public class WalkSlashState : MovementBaseState
 
         if (stateInfo.IsName("WalkSlash"))
         {
-            // Check if the WalkSlash animation has nearly completed (e.g., 90% complete)
             if (stateInfo.normalizedTime >= 0.9f && !hasPlayedAnimation)
             {
-                hasPlayedAnimation = true; // Mark as played
+                hasPlayedAnimation = true;
                 movement.animator.SetBool("WalkSlash", false);
-                DetermineNextState(movement); // Immediately determine the next state
+                DetermineNextState(movement);
             }
         }
         else if (hasPlayedAnimation)
         {
-            // If the animation has played, determine what to do next
             DetermineNextState(movement);
         }
     }
@@ -53,7 +51,7 @@ public class WalkSlashState : MovementBaseState
 
     public override void ExitState(MovementStateManager movement, MovementBaseState state)
     {
-        movement.animator.SetBool("WalkSlash", false); // Reset the bool
+        movement.animator.SetBool("WalkSlash", false);
         Debug.Log("Exiting WalkSlash State to " + state.GetType().Name);
     }
 }

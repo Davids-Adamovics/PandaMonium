@@ -17,44 +17,40 @@ public class StandSlashState : MovementBaseState
     {
         AnimatorStateInfo stateInfo = movement.animator.GetCurrentAnimatorStateInfo(0);
 
-        // Check if we are still in the StandSlash animation
         if (stateInfo.IsName("StandSlash"))
         {
-            // Check if the animation has completed
             if (stateInfo.normalizedTime >= 1.0f && !hasPlayedAnimation)
             {
                 hasPlayedAnimation = true;
-                movement.animator.SetBool("StandSlash", false); // Reset immediately
-                DetermineNextState(movement); // Move to the next state immediately
+                movement.animator.SetBool("StandSlash", false);
+                DetermineNextState(movement);
             }
         }
         else if (hasPlayedAnimation)
         {
-            // If the animation has played, determine what to do next
             DetermineNextState(movement);
         }
     }
 
     private void DetermineNextState(MovementStateManager movement)
     {
-        // After the StandSlash animation completes, determine the next state
         if (movement.direction.magnitude < 0.1f)
         {
-            movement.SwitchState(movement.Idle); // Transition back to Idle if not moving
+            movement.SwitchState(movement.Idle);
         }
         else if (Input.GetKey(KeyCode.LeftShift))
         {
-            movement.SwitchState(movement.Run); // Transition to Run if shift is held
+            movement.SwitchState(movement.Run);
         }
         else
         {
-            movement.SwitchState(movement.Walk); // Otherwise, transition to Walk
+            movement.SwitchState(movement.Walk);
         }
     }
 
     public override void ExitState(MovementStateManager movement, MovementBaseState state)
     {
-        movement.animator.SetBool("StandSlash", false); // Ensure the StandSlash bool is reset
+        movement.animator.SetBool("StandSlash", false);
         Debug.Log("Exiting StandSlash State to " + state.GetType().Name);
     }
 }
