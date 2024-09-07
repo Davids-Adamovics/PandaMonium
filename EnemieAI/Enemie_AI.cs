@@ -89,7 +89,7 @@ public class Enemy_AI : MonoBehaviour
 
         if (!alreadyAttacked)
         {
-            Vector3 projectileSpawnPosition = transform.position + new Vector3(0, -0.3f, 0); 
+            Vector3 projectileSpawnPosition = transform.position + new Vector3(0, -0.3f, 0);
 
             GameObject projectileInstance = Instantiate(projectile, projectileSpawnPosition, Quaternion.identity);
             Rigidbody rb = projectileInstance.GetComponent<Rigidbody>();
@@ -119,6 +119,7 @@ public class Enemy_AI : MonoBehaviour
     {
         Destroy(gameObject);
     }
+
 
     private void OnDrawGizmosSelected()
     {
