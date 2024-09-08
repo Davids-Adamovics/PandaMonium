@@ -52,9 +52,13 @@ public class Gun : MonoBehaviour
     {
         GameObject bullet = Instantiate(bulletPrefab, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
         Rigidbody rb = bullet.GetComponent<Rigidbody>();
+
         rb.velocity = bulletSpawnPoint.forward * bulletSpeed;
-        rb.useGravity = true;
+        StartCoroutine(BulletDrop(rb));
+
+        rb.useGravity = false;
     }
+
 
     void Grapple()
     {

@@ -4,6 +4,7 @@ public class Bullet : MonoBehaviour
 {
     public int damage = 11; 
     public float bulletLifetime = 5f; 
+    public LayerMask whatIsGround;
 
     private void Start()
     {
@@ -23,7 +24,7 @@ public class Bullet : MonoBehaviour
 
             Destroy(gameObject);
         }
-        else
+        else if (other.gameObject.layer == LayerMask.NameToLayer("WhatIsGround"))
         {
             Destroy(gameObject);
         }

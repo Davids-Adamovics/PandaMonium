@@ -1,5 +1,9 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
+using UnityEngine.Rendering.PostProcessing;
+
 
 public class Enemy_AI : MonoBehaviour
 {
@@ -8,16 +12,24 @@ public class Enemy_AI : MonoBehaviour
     public Transform player;
     public LayerMask whatIsGround, whatIsPlayer;
 
-    public float health;
-    //Patroling
+    public float health = 100;
+    public Image enemyHealthBar;
+
+    public PostProcessVolume postProcessVolume;
+    private Vignette vignette;
+    private bool isPulsing = false;
+
+    // Patroling
     public Vector3 walkPoint;
     bool walkPointSet;
     public float walkPointRange;
-    //Attacking
+
+    // Attacking
     public float timeBetweenAttacks;
     bool alreadyAttacked;
     public GameObject projectile;
-    //States
+
+    // States
     public float sightRange, attackRange;
     public bool playerInSightRange, playerInAttackRange;
 
@@ -27,6 +39,8 @@ public class Enemy_AI : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
         agent.autoTraverseOffMeshLink = false;
+
+        postProcessVolume.profile.TryGetSettings(out vignette);
     }
 
     private void Update()
@@ -111,15 +125,35 @@ public class Enemy_AI : MonoBehaviour
     public void TakeDamage(int damage)
     {
         health -= damage;
+        enemyHealthBar.fillAmount = health / 100f;
+        if (health <= 50 && !isPulsing)
+        {
+            StartCoroutine(PulseVignette());
+        }
 
         if (health <= 0) Invoke(nameof(DestroyEnemy), 0.5f);
+    }
+
+    IEnumerator PulseVignette()
+    {
+        isPulsing = true;
+        float pulseDuration = 0.2f;
+        Color originalColor = vignette.color.value;
+
+        for (float t = 0; t < 1; t += Time.deltaTime / pulseDuration)
+        {
+            vignette.color.value = Color.Lerp(Color.red, new Color(0.5f, 0, 0), Mathf.PingPong(t * 2, 1));
+            yield return null;
+        }
+
+        vignette.color.value = health <= 50 ? Color.red : Color.black;
+        isPulsing = false;
     }
 
     private void DestroyEnemy()
     {
         Destroy(gameObject);
     }
-
 
     private void OnDrawGizmosSelected()
     {
