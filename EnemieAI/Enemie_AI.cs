@@ -4,7 +4,6 @@ using UnityEngine.AI;
 using UnityEngine.UI;
 using UnityEngine.Rendering.PostProcessing;
 
-
 public class Enemy_AI : MonoBehaviour
 {
     public NavMeshAgent agent;
@@ -12,8 +11,9 @@ public class Enemy_AI : MonoBehaviour
     public Transform player;
     public LayerMask whatIsGround, whatIsPlayer;
 
-    public float health = 100;
+    public float health = 250;
     public Image enemyHealthBar;
+    public GameObject damageTextPrefab;
 
     public PostProcessVolume postProcessVolume;
     private Vignette vignette;
@@ -33,14 +33,39 @@ public class Enemy_AI : MonoBehaviour
     public float sightRange, attackRange;
     public bool playerInSightRange, playerInAttackRange;
 
+    private int accumulatedDamage = 0;
+
     private void Awake()
     {
-        player = GameObject.Find("Player").transform;
+        player = GameObject.Find("Player")?.transform;
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
-        agent.autoTraverseOffMeshLink = false;
 
-        postProcessVolume.profile.TryGetSettings(out vignette);
+        if (agent != null)
+        {
+            agent.autoTraverseOffMeshLink = false;
+        }
+        else
+        {
+            Debug.LogError("NavMeshAgent component is missing from this GameObject.");
+        }
+
+        if (animator == null)
+        {
+            Debug.LogError("Animator component is missing from this GameObject.");
+        }
+
+        if (postProcessVolume != null)
+        {
+            if (!postProcessVolume.profile.TryGetSettings(out vignette))
+            {
+                Debug.LogError("Vignette setting is missing in the PostProcessVolume profile.");
+            }
+        }
+        else
+        {
+            Debug.LogError("PostProcessVolume is not assigned.");
+        }
     }
 
     private void Update()
@@ -122,16 +147,20 @@ public class Enemy_AI : MonoBehaviour
         alreadyAttacked = false;
     }
 
-    public void TakeDamage(int damage)
+    public int TakeDamage(int damage)
     {
+        accumulatedDamage += damage;
         health -= damage;
-        enemyHealthBar.fillAmount = health / 100f;
-        if (health <= 50 && !isPulsing)
+        enemyHealthBar.fillAmount = health / 250f;
+
+        if (accumulatedDamage > 0 && !isPulsing)
         {
             StartCoroutine(PulseVignette());
         }
 
         if (health <= 0) Invoke(nameof(DestroyEnemy), 0.5f);
+
+        return accumulatedDamage;
     }
 
     IEnumerator PulseVignette()
@@ -152,6 +181,7 @@ public class Enemy_AI : MonoBehaviour
 
     private void DestroyEnemy()
     {
+        accumulatedDamage = 0;
         Destroy(gameObject);
     }
 
