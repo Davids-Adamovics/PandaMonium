@@ -7,6 +7,7 @@ using UnityEngine.Rendering.PostProcessing;
 public class HealthBarScript : MonoBehaviour
 {
     public Image MainChHealthBar;
+    public Image MainChBackground;
     public float healthAmount = 100;
 
     public PostProcessVolume postProcessVolume;
@@ -15,14 +16,17 @@ public class HealthBarScript : MonoBehaviour
 
     void Start()
     {
+        MainChBackground.gameObject.SetActive(true);
         postProcessVolume.profile.TryGetSettings(out vignette);
     }
+
 
     void Update()
     {
         if (healthAmount <= 0)
         {
             Application.LoadLevel(Application.loadedLevel);
+            MainChBackground.gameObject.SetActive(true);
         }
 
         if (healthAmount <= 50 && !isPulsing)

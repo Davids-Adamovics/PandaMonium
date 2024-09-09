@@ -153,10 +153,10 @@ public class Enemy_AI : MonoBehaviour
         health -= damage;
         enemyHealthBar.fillAmount = health / 250f;
 
-        if (accumulatedDamage > 0 && !isPulsing)
-        {
-            StartCoroutine(PulseVignette());
-        }
+        // if (accumulatedDamage > 0 && !isPulsing)
+        // {
+        //     StartCoroutine(PulseVignette());
+        // }
 
         if (health <= 0) Invoke(nameof(DestroyEnemy), 0.5f);
 

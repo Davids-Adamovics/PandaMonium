@@ -18,23 +18,35 @@ public class Gun : MonoBehaviour
     public LineRenderer grappleLine;
     public Transform player;
     public Rigidbody playerRb;
+    public GameObject gunObject;
 
     private GameObject currentGrappleBall;
     private bool isSwinging = false;
     private Coroutine currentGrappleCoroutine;
     private bool isGrappling = false;
+    private bool isReloading = false;  // Reload state flag
 
     void Update()
     {
-        if (Input.GetButtonDown("Fire1") && Time.time > nextFireTime)
+        // Disable shooting and grappling if reloading
+        if (!isReloading)
         {
-            Shoot();
-            nextFireTime = Time.time + fireRate;
+            if (Input.GetButtonDown("Fire1") && Time.time > nextFireTime)
+            {
+                Shoot();
+                nextFireTime = Time.time + fireRate;
+                StartCoroutine(GunShoot());
+            }
+
+            if (Input.GetButtonDown("Fire2"))
+            {
+                Grapple();
+            }
         }
 
-        if (Input.GetButtonDown("Fire2"))
+        if (Input.GetKeyDown(KeyCode.R))
         {
-            Grapple();
+            StartCoroutine(GunReload());
         }
 
         if (Input.GetMouseButtonDown(1) && isGrappling)
@@ -58,7 +70,6 @@ public class Gun : MonoBehaviour
 
         rb.useGravity = false;
     }
-
 
     void Grapple()
     {
@@ -156,5 +167,21 @@ public class Gun : MonoBehaviour
 
         isSwinging = false;
         isGrappling = false;
+    }
+
+    IEnumerator GunShoot()
+    {
+        gunObject.GetComponent<Animator>().Play("gunShoot");
+        yield return new WaitForSeconds(1.0f);
+        gunObject.GetComponent<Animator>().Play("New State");
+    }
+
+    IEnumerator GunReload()
+    {
+        isReloading = true;
+        gunObject.GetComponent<Animator>().Play("gunReload");
+        yield return new WaitForSeconds(1.0f);
+        gunObject.GetComponent<Animator>().Play("New State");
+        isReloading = false;
     }
 }
