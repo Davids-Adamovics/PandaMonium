@@ -10,14 +10,14 @@ public class Gun : MonoBehaviour
     public float fireRate = 0.5f;
     private float nextFireTime = 0f;
 
-    public int maxAmmoCount = 13;
-    public float ammoCount = 12f;
+    public int maxAmmoCount = 7;
+    public float ammoCount = 6f;
 
-    // Gun emission intensities
     public float maxCylinderIntensity = 4.26f;
     public float maxTorusIntensity = 4.26f;
     public float maxSphereIntensity = 4.32f;
     public float minIntensity = 4f;
+    public float resetIntensity = 4.26f;
 
     // Material references
     public Material cylinderMaterial;
@@ -40,20 +40,23 @@ public class Gun : MonoBehaviour
     private bool isGrappling = false;
     private bool isReloading = false;
 
-
     void Start()
     {
-        UpdateEmissionIntensity();
+
+        UpdateEmissionIntensity(minIntensity);
     }
+
     void Update()
     {
+
         if (!isReloading)
         {
+
             if (Input.GetButtonDown("Fire1") && Time.time > nextFireTime)
             {
                 Shoot();
                 nextFireTime = Time.time + fireRate;
-                StartCoroutine(GunShoot());
+                StartCoroutine(HandleGunShootAnimation());
             }
 
             if (Input.GetButtonDown("Fire2"))
@@ -62,8 +65,7 @@ public class Gun : MonoBehaviour
             }
         }
 
-
-        if (Input.GetKeyDown(KeyCode.R))
+        if (Input.GetKeyDown(KeyCode.R) && !isReloading && ammoCount != maxAmmoCount)
         {
             StartCoroutine(GunReload());
         }
@@ -81,7 +83,7 @@ public class Gun : MonoBehaviour
 
     void Shoot()
     {
-        if (ammoCount > 0)
+        if (ammoCount > 0 && !isReloading)
         {
             GameObject bullet = Instantiate(bulletPrefab, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
             Rigidbody rb = bullet.GetComponent<Rigidbody>();
@@ -91,7 +93,9 @@ public class Gun : MonoBehaviour
 
             rb.useGravity = false;
             ammoCount--;
-            UpdateEmissionIntensity(); // Update intensity after shooting
+            UpdateEmissionIntensity(ammoCount / maxAmmoCount * resetIntensity);
+
+            StartCoroutine(HandleGunShootAnimation());
         }
     }
 
@@ -193,49 +197,70 @@ public class Gun : MonoBehaviour
         isGrappling = false;
     }
 
-    IEnumerator GunShoot()
+    IEnumerator HandleGunShootAnimation()
     {
-        gunObject.GetComponent<Animator>().Play("gunShoot");
-        yield return new WaitForSeconds(1.0f);
-        gunObject.GetComponent<Animator>().Play("New State");
+        Animator animator = gunObject.GetComponent<Animator>();
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+
+        if (stateInfo.IsName("gunShoot") && stateInfo.normalizedTime < 1.0f)
+        {
+            yield break;
+        }
+
+        animator.Play("gunShoot");
+
+        yield return new WaitForSeconds(stateInfo.length);
+
+        animator.Play("New State"); 
     }
 
     IEnumerator GunReload()
     {
         isReloading = true;
-        gunObject.GetComponent<Animator>().CrossFade("gunReload", 0.1f);
 
-        // Wait for the reload animation to finish
-        yield return new WaitForSeconds(gunObject.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).length);
+        gunObject.GetComponent<Animator>().Play("gunReload");
 
-        ammoCount = maxAmmoCount; // Reset ammo
-        UpdateEmissionIntensity(); // Update intensity after reload
+        Debug.Log("Reloading...");
+
+        float startIntensity = minIntensity;
+        float endIntensity = resetIntensity;
+        float reloadDuration = 2f;
+        float elapsed = 0f;
+
+        while (elapsed < reloadDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / reloadDuration);
+
+            float currentIntensity = Mathf.Lerp(startIntensity, endIntensity, t);
+
+            UpdateEmissionIntensity(currentIntensity);
+
+            yield return null;
+        }
+
+        UpdateEmissionIntensity(endIntensity);
+
+        // Restore ammo
+        ammoCount = maxAmmoCount;
+
         isReloading = false;
+        Debug.Log("Reload Complete");
     }
 
-
-    void UpdateEmissionIntensity()
+    void UpdateEmissionIntensity(float intensity)
     {
-        float intensityDecreasePerShot = 0.05f;
-        float resetIntensity = 4.26f;
+        float currentCylinderIntensity = Mathf.Clamp(intensity, minIntensity, resetIntensity);
+        float currentTorusIntensity = Mathf.Clamp(intensity, minIntensity, resetIntensity);
+        float currentSphereIntensity = Mathf.Clamp(intensity, minIntensity, resetIntensity);
 
-        // Calculate the intensity based on ammo count
-        float intensityFactor = ammoCount / maxAmmoCount;
-
-        // Calculate current intensity, ensure it doesn’t drop below minIntensity
-        float currentCylinderIntensity = Mathf.Clamp(resetIntensity - (resetIntensity - minIntensity) * (1 - intensityFactor), minIntensity, resetIntensity);
-        float currentTorusIntensity = Mathf.Clamp(resetIntensity - (resetIntensity - minIntensity) * (1 - intensityFactor), minIntensity, resetIntensity);
-        float currentSphereIntensity = Mathf.Clamp(resetIntensity - (resetIntensity - minIntensity) * (1 - intensityFactor), minIntensity, resetIntensity);
-
-        // Log intensity for debugging
         Debug.Log("Cylinder Intensity: " + currentCylinderIntensity);
         Debug.Log("Torus Intensity: " + currentTorusIntensity);
         Debug.Log("Sphere Intensity: " + currentSphereIntensity);
 
-        // Update emission intensity
-        cylinderMaterial.SetColor("_EmissionColor", Color.yellow * (currentCylinderIntensity+10.5f));
-        torusMaterial.SetColor("_EmissionColor", Color.blue * (currentTorusIntensity+11));
-        sphereMaterial.SetColor("_EmissionColor", Color.red * (currentSphereIntensity+11));
+        cylinderMaterial.SetColor("_EmissionColor", Color.yellow * (currentCylinderIntensity + 10.5f));
+        torusMaterial.SetColor("_EmissionColor", Color.blue * (currentTorusIntensity + 11));
+        sphereMaterial.SetColor("_EmissionColor", Color.red * (currentSphereIntensity + 11));
     }
 
 
