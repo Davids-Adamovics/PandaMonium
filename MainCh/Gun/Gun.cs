@@ -5,18 +5,18 @@ public class Gun : MonoBehaviour
 {
     public GameObject bulletPrefab;
     public Transform bulletSpawnPoint;
-    public float bulletSpeed = 20f;
+    public float bulletSpeed = 40f;
     public float bulletDrop = 0.1f;
     public float fireRate = 0.5f;
     private float nextFireTime = 0f;
 
-    public int maxAmmoCount = 7;
+    public int maxAmmoCount = 6;
     public float ammoCount = 6f;
 
     public float maxCylinderIntensity = 4.26f;
     public float maxTorusIntensity = 4.26f;
     public float maxSphereIntensity = 4.32f;
-    public float minIntensity = 4f;
+    public float minIntensity = 4.20f;
     public float resetIntensity = 4.26f;
 
     // Material references
@@ -33,6 +33,8 @@ public class Gun : MonoBehaviour
     public Transform player;
     public Rigidbody playerRb;
     public GameObject gunObject;
+    public AudioSource gunshotAudio;
+    public AudioSource reloadAudio;
 
     private GameObject currentGrappleBall;
     private bool isSwinging = false;
@@ -42,16 +44,13 @@ public class Gun : MonoBehaviour
 
     void Start()
     {
-
         UpdateEmissionIntensity(minIntensity);
     }
 
     void Update()
     {
-
         if (!isReloading)
         {
-
             if (Input.GetButtonDown("Fire1") && Time.time > nextFireTime)
             {
                 Shoot();
@@ -85,6 +84,7 @@ public class Gun : MonoBehaviour
     {
         if (ammoCount > 0 && !isReloading)
         {
+            // Instantiate the bullet
             GameObject bullet = Instantiate(bulletPrefab, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
             Rigidbody rb = bullet.GetComponent<Rigidbody>();
 
@@ -93,11 +93,29 @@ public class Gun : MonoBehaviour
 
             rb.useGravity = false;
             ammoCount--;
-            UpdateEmissionIntensity(ammoCount / maxAmmoCount * resetIntensity);
+
+            if (gunshotAudio != null)
+            {
+                gunshotAudio.time = 0.3f;
+                gunshotAudio.Play();
+            }
+
+            if (ammoCount == 0)
+            {
+                // Start coroutine to slowly fade intensity to minimum when ammo reaches zero
+                StartCoroutine(FadeEmissionToZero());
+            }
+            else
+            {
+                // Keep the intensity at the maximum while there are bullets
+                UpdateEmissionIntensity(resetIntensity);
+            }
 
             StartCoroutine(HandleGunShootAnimation());
         }
     }
+
+
 
     void Grapple()
     {
@@ -211,7 +229,7 @@ public class Gun : MonoBehaviour
 
         yield return new WaitForSeconds(stateInfo.length);
 
-        animator.Play("New State"); 
+        animator.Play("New State");
     }
 
     IEnumerator GunReload()
@@ -224,13 +242,21 @@ public class Gun : MonoBehaviour
 
         float startIntensity = minIntensity;
         float endIntensity = resetIntensity;
-        float reloadDuration = 2f;
+        float reloadDuration = 1.5f;  // Reduced duration for faster reload
         float elapsed = 0f;
+
+        // Play gunshot sound
+        if (reloadAudio != null)
+        {
+            reloadAudio.time = 0.1f;
+            reloadAudio.Play();
+        }
 
         while (elapsed < reloadDuration)
         {
             elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / reloadDuration);
+
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / reloadDuration));
 
             float currentIntensity = Mathf.Lerp(startIntensity, endIntensity, t);
 
@@ -248,8 +274,10 @@ public class Gun : MonoBehaviour
         Debug.Log("Reload Complete");
     }
 
+
     void UpdateEmissionIntensity(float intensity)
     {
+
         float currentCylinderIntensity = Mathf.Clamp(intensity, minIntensity, resetIntensity);
         float currentTorusIntensity = Mathf.Clamp(intensity, minIntensity, resetIntensity);
         float currentSphereIntensity = Mathf.Clamp(intensity, minIntensity, resetIntensity);
@@ -258,10 +286,26 @@ public class Gun : MonoBehaviour
         Debug.Log("Torus Intensity: " + currentTorusIntensity);
         Debug.Log("Sphere Intensity: " + currentSphereIntensity);
 
-        cylinderMaterial.SetColor("_EmissionColor", Color.yellow * (currentCylinderIntensity + 10.5f));
-        torusMaterial.SetColor("_EmissionColor", Color.blue * (currentTorusIntensity + 11));
-        sphereMaterial.SetColor("_EmissionColor", Color.red * (currentSphereIntensity + 11));
+        cylinderMaterial.SetColor("_EmissionColor", Color.yellow * (currentCylinderIntensity + 10));
+        torusMaterial.SetColor("_EmissionColor", Color.blue * (currentTorusIntensity + 10.5f));
+        sphereMaterial.SetColor("_EmissionColor", Color.red * (currentSphereIntensity + 10.5f));
     }
+    IEnumerator FadeEmissionToZero()
+    {
+        float elapsed = 0f;
+        float fadeDuration = 2f;
+        float startIntensity = resetIntensity;
 
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float currentIntensity = Mathf.Lerp(startIntensity, minIntensity, elapsed / fadeDuration);
 
+            UpdateEmissionIntensity(currentIntensity);
+
+            yield return null;
+        }
+
+        UpdateEmissionIntensity(minIntensity);
+    }
 }

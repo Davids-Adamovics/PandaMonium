@@ -54,6 +54,9 @@ public class FirstPersonController : MonoBehaviour
     public bool playerCanMove = true;
     public float walkSpeed = 5f;
     public float maxVelocityChange = 10f;
+    public float leanAngle = 25f;
+    public float leanSpeed = 5f;
+    private float currentLeanAngle = 0f;
 
     // Internal Variables
     private bool isWalking = false;
@@ -352,6 +355,38 @@ public class FirstPersonController : MonoBehaviour
         {
             HeadBob();
         }
+
+        HandleLeaning();
+    }
+
+    void HandleLeaning()
+    {
+        // Get horizontal and vertical input
+        float horizontalInput = Input.GetAxis("Horizontal");
+        float verticalInput = Input.GetAxis("Vertical");
+
+        // Calculate target lean angle based on input
+        float targetLeanAngle = 0f;
+
+        if (horizontalInput != 0 || verticalInput != 0)
+        {
+            if (horizontalInput > 0)
+            {
+                // Lean right when moving right
+                targetLeanAngle = -leanAngle;
+            }
+            else if (horizontalInput < 0)
+            {
+                // Lean left when moving left
+                targetLeanAngle = leanAngle;
+            }
+        }
+
+        // Smoothly interpolate between the current and target lean angles
+        currentLeanAngle = Mathf.Lerp(currentLeanAngle, targetLeanAngle, Time.deltaTime * leanSpeed);
+
+        // Apply the lean to the player's rotation
+        transform.localRotation = Quaternion.Euler(0f, transform.localEulerAngles.y, currentLeanAngle);
     }
 
     void FixedUpdate()
