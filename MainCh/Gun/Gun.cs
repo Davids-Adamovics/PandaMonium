@@ -35,6 +35,7 @@ public class Gun : MonoBehaviour
     public GameObject gunObject;
     public AudioSource gunshotAudio;
     public AudioSource reloadAudio;
+    public AudioSource grappleAudio;
 
     private GameObject currentGrappleBall;
     private bool isSwinging = false;
@@ -84,7 +85,6 @@ public class Gun : MonoBehaviour
     {
         if (ammoCount > 0 && !isReloading)
         {
-            // Instantiate the bullet
             GameObject bullet = Instantiate(bulletPrefab, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
             Rigidbody rb = bullet.GetComponent<Rigidbody>();
 
@@ -102,12 +102,10 @@ public class Gun : MonoBehaviour
 
             if (ammoCount == 0)
             {
-                // Start coroutine to slowly fade intensity to minimum when ammo reaches zero
                 StartCoroutine(FadeEmissionToZero());
             }
             else
             {
-                // Keep the intensity at the maximum while there are bullets
                 UpdateEmissionIntensity(resetIntensity);
             }
 
@@ -138,6 +136,12 @@ public class Gun : MonoBehaviour
             grappleLine.positionCount = 2;
             grappleLine.SetPosition(0, bulletSpawnPoint.position);
             grappleLine.SetPosition(1, currentGrappleBall.transform.position);
+
+            if (grappleAudio != null)
+            {
+                grappleAudio.time = 0.4f;
+                grappleAudio.Play();
+            }
 
             currentGrappleCoroutine = StartCoroutine(GrappleMove(currentGrappleBall, hit.point));
         }
@@ -171,6 +175,11 @@ public class Gun : MonoBehaviour
             yield return null;
         }
 
+        if (grappleAudio != null)
+        {
+            grappleAudio.Stop();
+        }
+
         grappleLine.enabled = false;
         if (currentGrappleBall != null)
         {
@@ -180,6 +189,7 @@ public class Gun : MonoBehaviour
         isSwinging = false;
         isGrappling = false;
     }
+
 
     void Swing()
     {
@@ -217,19 +227,22 @@ public class Gun : MonoBehaviour
 
     IEnumerator HandleGunShootAnimation()
     {
-        Animator animator = gunObject.GetComponent<Animator>();
-        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-
-        if (stateInfo.IsName("gunShoot") && stateInfo.normalizedTime < 1.0f)
+        if (ammoCount > 0 && !isReloading)
         {
-            yield break;
+            Animator animator = gunObject.GetComponent<Animator>();
+            AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+
+            if (stateInfo.IsName("gunShoot") && stateInfo.normalizedTime < 1.0f)
+            {
+                yield break;
+            }
+
+            animator.Play("gunShoot");
+
+            yield return new WaitForSeconds(0.3f);
+
+            animator.Play("New State");
         }
-
-        animator.Play("gunShoot");
-
-        yield return new WaitForSeconds(stateInfo.length);
-
-        animator.Play("New State");
     }
 
     IEnumerator GunReload()
@@ -242,7 +255,7 @@ public class Gun : MonoBehaviour
 
         float startIntensity = minIntensity;
         float endIntensity = resetIntensity;
-        float reloadDuration = 1.5f;  // Reduced duration for faster reload
+        float reloadDuration = 1.5f;
         float elapsed = 0f;
 
         // Play gunshot sound

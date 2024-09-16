@@ -18,6 +18,7 @@ public class Enemy_AI : MonoBehaviour
     public PostProcessVolume postProcessVolume;
     private Vignette vignette;
     private bool isPulsing = false;
+    private bool isDead = false;
 
     // Patroling
     public Vector3 walkPoint;
@@ -70,6 +71,8 @@ public class Enemy_AI : MonoBehaviour
 
     private void Update()
     {
+        if (isDead) return;
+
         playerInSightRange = Physics.CheckSphere(transform.position, sightRange, whatIsPlayer);
         playerInAttackRange = Physics.CheckSphere(transform.position, attackRange, whatIsPlayer);
 
@@ -116,6 +119,8 @@ public class Enemy_AI : MonoBehaviour
 
     private void AttackPlayer()
     {
+        if (isDead) return;
+
         agent.SetDestination(transform.position);
 
         Vector3 directionToPlayer = player.position - transform.position;
@@ -149,39 +154,27 @@ public class Enemy_AI : MonoBehaviour
 
     public int TakeDamage(int damage)
     {
+        if (isDead) return 0;
+
         accumulatedDamage += damage;
         health -= damage;
         enemyHealthBar.fillAmount = health / 250f;
 
-        // if (accumulatedDamage > 0 && !isPulsing)
-        // {
-        //     StartCoroutine(PulseVignette());
-        // }
-
-        if (health <= 0) Invoke(nameof(DestroyEnemy), 0.5f);
+        if (health <= 0) StartCoroutine(DestroyEnemy());
 
         return accumulatedDamage;
     }
 
-    IEnumerator PulseVignette()
+    private IEnumerator DestroyEnemy()
     {
-        isPulsing = true;
-        float pulseDuration = 0.2f;
-        Color originalColor = vignette.color.value;
-
-        for (float t = 0; t < 1; t += Time.deltaTime / pulseDuration)
-        {
-            vignette.color.value = Color.Lerp(Color.red, new Color(0.5f, 0, 0), Mathf.PingPong(t * 2, 1));
-            yield return null;
-        }
-
-        vignette.color.value = health <= 50 ? Color.red : Color.black;
-        isPulsing = false;
-    }
-
-    private void DestroyEnemy()
-    {
+        isDead = true;
         accumulatedDamage = 0;
+        agent.enabled = false;
+        animator.enabled = false;
+        enemyHealthBar.enabled = false;
+
+        yield return new WaitForSeconds(5);
+
         Destroy(gameObject);
     }
 

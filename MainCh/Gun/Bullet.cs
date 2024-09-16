@@ -1,12 +1,13 @@
 using UnityEngine;
-using TMPro; // Make sure to include this namespace
+using TMPro;
 
 public class Bullet : MonoBehaviour
 {
-    public int damage = 11; 
-    public float bulletLifetime = 5f; 
+    public int damage = 11;
+    public float bulletLifetime = 5f;
     public LayerMask whatIsGround;
     public GameObject damageTextPrefab;
+    public GameObject hitParticlePrefab;
 
     private void Start()
     {
@@ -23,6 +24,8 @@ public class Bullet : MonoBehaviour
             {
                 int previousDamage = enemy.TakeDamage(damage);
                 ShowDamageIndicator(other.transform.position, previousDamage);
+
+                PlayHitParticle(other.transform.position);
             }
 
             Destroy(gameObject);
@@ -49,4 +52,26 @@ public class Bullet : MonoBehaviour
 
         Destroy(damageText, 1f);
     }
+
+    void PlayHitParticle(Vector3 position)
+    {
+        if (hitParticlePrefab != null)
+        {
+
+            GameObject particleInstance = Instantiate(hitParticlePrefab, position, Quaternion.identity);
+
+            particleInstance.transform.LookAt(Camera.main.transform);
+
+            particleInstance.transform.Rotate(0, 180, 0);
+
+            ParticleSystem particleSystem = particleInstance.GetComponent<ParticleSystem>();
+            if (particleSystem != null)
+            {
+                particleSystem.Play();
+            }
+
+            Destroy(particleInstance, 2f);
+        }
+    }
+
 }
