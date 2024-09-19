@@ -52,14 +52,14 @@ public class Gun : MonoBehaviour
     {
         if (!isReloading)
         {
-            if (Input.GetButtonDown("Fire1") && Time.time > nextFireTime)
+            if (Input.GetMouseButtonDown(0) && Time.time > nextFireTime) // Left mouse click
             {
                 Shoot();
                 nextFireTime = Time.time + fireRate;
                 StartCoroutine(HandleGunShootAnimation());
             }
 
-            if (Input.GetButtonDown("Fire2"))
+            if (Input.GetMouseButtonDown(1)) // Right mouse click
             {
                 Grapple();
             }
@@ -80,6 +80,7 @@ public class Gun : MonoBehaviour
             Swing();
         }
     }
+
 
     void Shoot()
     {
