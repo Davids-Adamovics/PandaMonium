@@ -1,5 +1,7 @@
 using System.Collections;
 using UnityEngine;
+using TMPro;
+
 
 public class Gun : MonoBehaviour
 {
@@ -12,6 +14,7 @@ public class Gun : MonoBehaviour
 
     public int maxAmmoCount = 6;
     public float ammoCount = 6f;
+    public TextMeshProUGUI ammoCountText;
 
     public float maxCylinderIntensity = 4.26f;
     public float maxTorusIntensity = 4.26f;
@@ -46,6 +49,7 @@ public class Gun : MonoBehaviour
     void Start()
     {
         UpdateEmissionIntensity(minIntensity);
+        UpdateAmmoText();
     }
 
     void Update()
@@ -81,7 +85,6 @@ public class Gun : MonoBehaviour
         }
     }
 
-
     void Shoot()
     {
         if (ammoCount > 0 && !isReloading)
@@ -94,6 +97,8 @@ public class Gun : MonoBehaviour
 
             rb.useGravity = false;
             ammoCount--;
+
+            UpdateAmmoText();
 
             if (gunshotAudio != null)
             {
@@ -114,7 +119,13 @@ public class Gun : MonoBehaviour
         }
     }
 
-
+    void UpdateAmmoText()
+    {
+        if (ammoCountText != null)
+        {
+            ammoCountText.text = ammoCount.ToString();
+        }
+    }
 
     void Grapple()
     {
