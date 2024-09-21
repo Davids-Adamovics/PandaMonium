@@ -11,6 +11,8 @@ public class Gun : MonoBehaviour
     public float bulletDrop = 0.1f;
     public float fireRate = 0.5f;
     private float nextFireTime = 0f;
+    public float knockbackForce = 10f;
+
 
     public int maxAmmoCount = 6;
     public float ammoCount = 6f;
@@ -100,6 +102,11 @@ public class Gun : MonoBehaviour
 
             UpdateAmmoText();
 
+            if (playerRb != null)
+            {
+                playerRb.AddForce(-bulletSpawnPoint.forward * knockbackForce, ForceMode.Impulse);
+            }
+
             if (gunshotAudio != null)
             {
                 gunshotAudio.time = 0.3f;
@@ -118,6 +125,7 @@ public class Gun : MonoBehaviour
             StartCoroutine(HandleGunShootAnimation());
         }
     }
+
 
     void UpdateAmmoText()
     {
