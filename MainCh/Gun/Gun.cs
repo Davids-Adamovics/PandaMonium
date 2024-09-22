@@ -104,7 +104,11 @@ public class Gun : MonoBehaviour
 
             if (playerRb != null)
             {
-                playerRb.AddForce(-bulletSpawnPoint.forward * knockbackForce, ForceMode.Impulse);
+                Vector3 knockbackDirection = bulletSpawnPoint.forward;
+                knockbackDirection.y = 0;
+                knockbackDirection.Normalize();
+
+                StartCoroutine(ApplySmoothKnockback(-knockbackDirection, knockbackForce, 0.5f));
             }
 
             if (gunshotAudio != null)
@@ -123,6 +127,18 @@ public class Gun : MonoBehaviour
             }
 
             StartCoroutine(HandleGunShootAnimation());
+        }
+    }
+
+    IEnumerator ApplySmoothKnockback(Vector3 direction, float totalForce, float duration)
+    {
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            float forceThisFrame = (totalForce / duration) * Time.deltaTime;
+            playerRb.AddForce(direction * forceThisFrame, ForceMode.VelocityChange);
+            elapsed += Time.deltaTime;
+            yield return null;
         }
     }
 
