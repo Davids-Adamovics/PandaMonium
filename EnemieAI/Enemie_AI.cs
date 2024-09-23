@@ -11,7 +11,7 @@ public class Enemy_AI : MonoBehaviour
     public Transform player;
     public LayerMask whatIsGround, whatIsPlayer;
 
-    public float health = 250;
+    public float health = 100;
     public Image enemyHealthBar;
     public GameObject damageTextPrefab;
 
@@ -29,6 +29,7 @@ public class Enemy_AI : MonoBehaviour
     public float timeBetweenAttacks;
     bool alreadyAttacked;
     public GameObject projectile;
+    public ParticleSystem deathParticlesBlood;
 
     // States
     public float sightRange, attackRange;
@@ -172,6 +173,15 @@ public class Enemy_AI : MonoBehaviour
         agent.enabled = false;
         animator.enabled = false;
         enemyHealthBar.enabled = false;
+        if (deathParticlesBlood != null)
+        {
+            deathParticlesBlood.Play();
+        }
+        else
+        {
+            Debug.LogError("Death particles are not assigned!");
+        }
+
 
         yield return new WaitForSeconds(5);
 

@@ -60,6 +60,8 @@ public class FirstPersonController : MonoBehaviour
     // Sprint Bar
     public bool useSprintBar = true;
     public Image sprintBarBG;
+    public Sprite sprintBarBackgroundSprite;
+
     public Image sprintBar;
     public float sprintBarWidthPercent = .3f;
     public float sprintBarHeightPercent = .015f;
@@ -148,7 +150,7 @@ public class FirstPersonController : MonoBehaviour
         {
             crosshairObject.gameObject.SetActive(false);
         }
-        
+
         #region Sprint Bar
 
         sprintBarCG = GetComponentInChildren<CanvasGroup>();
@@ -157,13 +159,17 @@ public class FirstPersonController : MonoBehaviour
         {
             sprintBarBG.gameObject.SetActive(true);
             sprintBar.gameObject.SetActive(true);
-        }
+
+            if (sprintBarBG != null && sprintBarBackgroundSprite != null)
+            {
+                sprintBarBG.sprite = sprintBarBackgroundSprite;
+            }
+        }//
         else
         {
             sprintBarBG.gameObject.SetActive(false);
             sprintBar.gameObject.SetActive(false);
         }
-
         #endregion
 
     }
@@ -174,7 +180,6 @@ public class FirstPersonController : MonoBehaviour
     {
         #region Camera
 
-        // Control camera movement
         if (cameraCanMove)
         {
             yaw = transform.localEulerAngles.y + Input.GetAxis("Mouse X") * mouseSensitivity;
@@ -185,11 +190,9 @@ public class FirstPersonController : MonoBehaviour
             }
             else
             {
-                // Inverted Y
                 pitch += mouseSensitivity * Input.GetAxis("Mouse Y");
             }
 
-            // Clamp pitch between lookAngle
             pitch = Mathf.Clamp(pitch, -maxLookAngle, maxLookAngle);
 
             transform.localEulerAngles = new Vector3(0, yaw, 0);
@@ -198,6 +201,8 @@ public class FirstPersonController : MonoBehaviour
         #endregion
 
         #region Sprint
+        sprintBarCG.alpha = Mathf.Clamp(sprintBarCG.alpha, 0f, 1f);
+
         if (enableSprint)
         {
             if (isSprinting)
@@ -216,7 +221,7 @@ public class FirstPersonController : MonoBehaviour
             }
             else
             {
-                sprintRemaining = Mathf.Clamp(sprintRemaining += 1 * Time.deltaTime, 0, sprintDuration);
+                sprintRemaining = Mathf.Clamp(sprintRemaining + 1 * Time.deltaTime, 0, sprintDuration);
             }
 
             if (isSprintCooldown)
@@ -235,12 +240,11 @@ public class FirstPersonController : MonoBehaviour
             if (useSprintBar && !unlimitedSprint)
             {
                 float sprintRemainingPercent = sprintRemaining / sprintDuration;
-                sprintBar.fillAmount = sprintRemaining;
+                sprintBar.fillAmount = sprintRemainingPercent;
             }
-
         }
-
         #endregion
+
 
         #region Jump
 
