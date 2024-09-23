@@ -37,6 +37,8 @@ public class Enemy_AI : MonoBehaviour
 
     private int accumulatedDamage = 0;
 
+    public AudioSource DeathSound;
+
     private void Awake()
     {
         player = GameObject.Find("Player")?.transform;
@@ -176,10 +178,20 @@ public class Enemy_AI : MonoBehaviour
         if (deathParticlesBlood != null)
         {
             deathParticlesBlood.Play();
+            DeathSound.Play();
         }
         else
         {
             Debug.LogError("Death particles are not assigned!");
+        }
+        if (DeathSound != null)
+        {
+            DeathSound.Play();
+            Debug.LogError("DeathSound played");
+        }
+        else
+        {
+            Debug.LogError("DeathSound is not assigned!");
         }
 
 

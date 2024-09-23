@@ -191,7 +191,7 @@ public class Gun : MonoBehaviour
 
             if (grappleAudio != null)
             {
-                grappleAudio.time = 0.4f;
+                grappleAudio.time = 0.8f;
                 grappleAudio.Play();
             }
 

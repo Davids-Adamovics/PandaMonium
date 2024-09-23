@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering.PostProcessing;
 
 public class EnemySpawner : MonoBehaviour
 {
     public GameObject enemyPrefab;
     public int numberOfEnemies = 5;
     public Vector3 spawnAreaSize = new Vector3(10, 0, 10);
+    public PostProcessVolume postProcessVolume; // Add this line
 
     void Start()
     {
@@ -23,7 +25,14 @@ public class EnemySpawner : MonoBehaviour
                 transform.position.z + Random.Range(-spawnAreaSize.z / 2, spawnAreaSize.z / 2)
             );
 
-            Instantiate(enemyPrefab, spawnPosition, Quaternion.identity);
+            GameObject enemyInstance = Instantiate(enemyPrefab, spawnPosition, Quaternion.identity);
+            
+            // Assign the PostProcessVolume to the enemy
+            Enemy_AI enemyAI = enemyInstance.GetComponent<Enemy_AI>();
+            if (enemyAI != null)
+            {
+                enemyAI.postProcessVolume = postProcessVolume; // Assign the volume
+            }
         }
     }
 
