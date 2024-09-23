@@ -58,14 +58,14 @@ public class Gun : MonoBehaviour
     {
         if (!isReloading)
         {
-            if (Input.GetMouseButtonDown(0) && Time.time > nextFireTime) // Left mouse click
+            if (Input.GetMouseButtonDown(0) && Time.time > nextFireTime)
             {
                 Shoot();
                 nextFireTime = Time.time + fireRate;
                 StartCoroutine(HandleGunShootAnimation());
             }
 
-            if (Input.GetMouseButtonDown(1)) // Right mouse click
+            if (Input.GetMouseButtonDown(1))
             {
                 Grapple();
             }
@@ -94,7 +94,22 @@ public class Gun : MonoBehaviour
             GameObject bullet = Instantiate(bulletPrefab, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
             Rigidbody rb = bullet.GetComponent<Rigidbody>();
 
-            rb.velocity = bulletSpawnPoint.forward * bulletSpeed;
+            Vector3 crosshairScreenPosition = new Vector3(Screen.width / 2, Screen.height / 2, 0);
+            Ray ray = Camera.main.ScreenPointToRay(crosshairScreenPosition);
+
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                Vector3 shootDirection = (hit.point - bulletSpawnPoint.position).normalized;
+                shootDirection.y += 0.1f;
+                shootDirection.Normalize();
+
+                rb.velocity = shootDirection * bulletSpeed;
+            }
+            else
+            {
+                rb.velocity = bulletSpawnPoint.forward * bulletSpeed;
+            }
+
             StartCoroutine(BulletDrop(rb));
 
             rb.useGravity = false;
@@ -129,6 +144,7 @@ public class Gun : MonoBehaviour
             StartCoroutine(HandleGunShootAnimation());
         }
     }
+
 
     IEnumerator ApplySmoothKnockback(Vector3 direction, float totalForce, float duration)
     {
@@ -317,7 +333,8 @@ public class Gun : MonoBehaviour
         UpdateEmissionIntensity(endIntensity);
 
         // Restore ammo
-        ammoCount = maxAmmoCount;
+        ammoCount = maxAmmoCount - 1;
+        UpdateAmmoText();
 
         isReloading = false;
         Debug.Log("Reload Complete");

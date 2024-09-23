@@ -1,16 +1,28 @@
 using System.Collections;
 using UnityEngine;
+using TMPro;
 
 public class HealingPad : MonoBehaviour
 {
-    public GameObject[] objectsToDisable; // Array of objects to deactivate (can assign in the inspector)
-    public float healAmount = 25f;        // Amount of health to restore
-    public float reactivationTime = 30f;  // Time to wait before reactivating the pad
-    public GameObject player;             // Reference to the player GameObject (drag into the Inspector)
+    public GameObject[] objectsToDisable;
+    public float healAmount = 25f;
+    public float reactivationTime = 30f;
+    public GameObject player;
+    public TextMeshPro TimeLeft;
 
-    private bool isActive = true;         // To check if the healing pad is active
+    private bool isActive = true;
 
-    // This method is called when something enters the collider attached to the HealingPad object
+    void Update()
+    {
+        if (TimeLeft != null)
+        {
+            Vector3 directionToPlayer = player.transform.position - TimeLeft.transform.position;
+            directionToPlayer.y = 0; 
+            Quaternion lookRotation = Quaternion.LookRotation(directionToPlayer);
+            TimeLeft.transform.rotation = lookRotation * Quaternion.Euler(0, 180, 0);
+        }
+    }
+
     void OnTriggerEnter(Collider other)
     {
         if (other.gameObject == player && isActive)
@@ -20,46 +32,46 @@ public class HealingPad : MonoBehaviour
         }
     }
 
-
-    // Heal the player using the HealthBarScript
     private void HealPlayer()
     {
         HealthBarScript healthBar = player.GetComponent<HealthBarScript>();
         if (healthBar != null)
         {
-            healthBar.Heal(healAmount); // Heal the player for the specified amount
-            Debug.Log("Player healed");
+            healthBar.Heal(healAmount);
         }
     }
 
-    // Coroutine to deactivate objects and reactivate them after a delay
     private IEnumerator DisableHealingPad()
     {
-        // Deactivate the healing pad
         isActive = false;
 
-        // Deactivate specified objects
         foreach (GameObject obj in objectsToDisable)
         {
             if (obj != null)
             {
-                obj.SetActive(false); // Disable the object
+                obj.SetActive(false);
             }
         }
 
-        // Wait for the specified reactivation time
-        yield return new WaitForSeconds(reactivationTime);
+        float timeRemaining = reactivationTime;
 
-        // Reactivate specified objects
+        while (timeRemaining > 0)
+        {
+            TimeLeft.text = timeRemaining.ToString("F0");
+            yield return new WaitForSeconds(1f);
+            timeRemaining--;
+        }
+
+        TimeLeft.text = "";
+
         foreach (GameObject obj in objectsToDisable)
         {
             if (obj != null)
             {
-                obj.SetActive(true); // Re-enable the object
+                obj.SetActive(true);
             }
         }
 
-        // Mark the healing pad as active again
         isActive = true;
     }
 }

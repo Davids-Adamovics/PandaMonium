@@ -1,4 +1,2 @@
-EnemieAI.meta
-Enviroment.meta
-MainCh.meta
-Scenes.meta
+# Unity meta files
+*.meta
