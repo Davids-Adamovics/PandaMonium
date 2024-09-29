@@ -10,7 +10,6 @@ public class GrapplingGun : MonoBehaviour
     public Transform gunTip, camera, player;
     private float maxDistance = 100f;
     private SpringJoint joint;
-    private bool isGrappling = false;
 
     void Awake()
     {
@@ -27,7 +26,7 @@ public class GrapplingGun : MonoBehaviour
 
     void LateUpdate() // Called after Update()
     {
-        if (isGrappling)
+        if (joint != null)
         {
             DrawRope();
         }
@@ -57,8 +56,6 @@ public class GrapplingGun : MonoBehaviour
             joint.massScale = 4.5f;
 
             lr.positionCount = 2;
-
-            isGrappling = true;
             lr.enabled = true;
         }
     }
@@ -75,5 +72,15 @@ public class GrapplingGun : MonoBehaviour
     {
         lr.positionCount = 0;
         Destroy(joint);
+    }
+
+    public bool IsGrappling() // Changed method name to avoid conflict
+    {
+        return joint != null;
+    }
+
+    public Vector3 GetGrapplePoint()
+    {
+        return grapplePoint;
     }
 }
