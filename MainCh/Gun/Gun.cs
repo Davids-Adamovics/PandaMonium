@@ -29,23 +29,12 @@ public class Gun : MonoBehaviour
     public Material torusMaterial;
     public Material sphereMaterial;
 
-    public GameObject grappleBallPrefab;
-    public float grappleRange = 30f;
-    public float grappleSpeed = 50f;
-    public float playerMoveSpeed = 20f;
-    public float swingForce = 5f;
-    public LineRenderer grappleLine;
     public Transform player;
     public Rigidbody playerRb;
     public GameObject gunObject;
     public AudioSource gunshotAudio;
     public AudioSource reloadAudio;
     public AudioSource grappleAudio;
-
-    private GameObject currentGrappleBall;
-    private bool isSwinging = false;
-    private Coroutine currentGrappleCoroutine;
-    private bool isGrappling = false;
     private bool isReloading = false;
 
     void Start()
@@ -59,15 +48,10 @@ public class Gun : MonoBehaviour
         if (!isReloading)
         {
             if (Input.GetMouseButtonDown(0) && Time.time > nextFireTime)
-            {
+            { //SHOOT
                 Shoot();
                 nextFireTime = Time.time + fireRate;
                 StartCoroutine(HandleGunShootAnimation());
-            }
-
-            if (Input.GetMouseButtonDown(1))
-            {
-                Grapple();
             }
         }
 
@@ -75,17 +59,7 @@ public class Gun : MonoBehaviour
         {
             StartCoroutine(GunReload());
         }
-
-        if (Input.GetMouseButtonDown(1) && isGrappling)
-        {
-            StopGrapple();
-        }
-
-        if (isSwinging)
-        {
-            Swing();
-        }
-    }
+    } //UPDATE end
 
     void Shoot()
     {
@@ -109,8 +83,6 @@ public class Gun : MonoBehaviour
             {
                 rb.velocity = bulletSpawnPoint.forward * bulletSpeed;
             }
-
-            StartCoroutine(BulletDrop(rb));
 
             rb.useGravity = false;
             ammoCount--;
@@ -165,116 +137,6 @@ public class Gun : MonoBehaviour
         {
             ammoCountText.text = ammoCount.ToString();
         }
-    }
-
-    void Grapple()
-    {
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, transform.forward, out hit, grappleRange))
-        {
-            if (currentGrappleCoroutine != null)
-            {
-                StopCoroutine(currentGrappleCoroutine);
-            }
-
-            if (currentGrappleBall != null)
-            {
-                Destroy(currentGrappleBall);
-            }
-
-            currentGrappleBall = Instantiate(grappleBallPrefab, bulletSpawnPoint.position, Quaternion.identity);
-
-            grappleLine.enabled = true;
-            grappleLine.positionCount = 2;
-            grappleLine.SetPosition(0, bulletSpawnPoint.position);
-            grappleLine.SetPosition(1, currentGrappleBall.transform.position);
-
-            if (grappleAudio != null)
-            {
-                grappleAudio.time = 0.8f;
-                grappleAudio.Play();
-            }
-
-            currentGrappleCoroutine = StartCoroutine(GrappleMove(currentGrappleBall, hit.point));
-        }
-    }
-
-    IEnumerator GrappleMove(GameObject grappleBall, Vector3 target)
-    {
-        while (Vector3.Distance(grappleBall.transform.position, target) > 0.1f)
-        {
-            grappleBall.transform.position = Vector3.MoveTowards(grappleBall.transform.position, target, grappleSpeed * Time.deltaTime);
-
-            grappleLine.SetPosition(0, bulletSpawnPoint.position);
-            grappleLine.SetPosition(1, grappleBall.transform.position);
-
-            yield return null;
-        }
-
-        isSwinging = true;
-        currentGrappleCoroutine = StartCoroutine(MovePlayerToGrapple(target));
-    }
-
-    IEnumerator MovePlayerToGrapple(Vector3 target)
-    {
-        while (Vector3.Distance(player.position, target) > 1f)
-        {
-            player.position = Vector3.MoveTowards(player.position, target, playerMoveSpeed * Time.deltaTime);
-
-            grappleLine.SetPosition(0, bulletSpawnPoint.position);
-            grappleLine.SetPosition(1, target);
-
-            yield return null;
-        }
-
-        if (grappleAudio != null)
-        {
-            grappleAudio.Stop();
-        }
-
-        grappleLine.enabled = false;
-        if (currentGrappleBall != null)
-        {
-            Destroy(currentGrappleBall);
-        }
-
-        isSwinging = false;
-        isGrappling = false;
-    }
-
-
-    void Swing()
-    {
-        float horizontalInput = Input.GetAxis("Horizontal");
-
-        playerRb.AddForce(Vector3.right * horizontalInput * swingForce, ForceMode.Acceleration);
-    }
-
-    IEnumerator BulletDrop(Rigidbody bulletRb)
-    {
-        while (bulletRb != null)
-        {
-            bulletRb.velocity += Vector3.down * bulletDrop * Time.deltaTime;
-            yield return null;
-        }
-    }
-
-    void StopGrapple()
-    {
-        if (currentGrappleCoroutine != null)
-        {
-            StopCoroutine(currentGrappleCoroutine);
-            currentGrappleCoroutine = null;
-        }
-
-        grappleLine.enabled = false;
-        if (currentGrappleBall != null)
-        {
-            Destroy(currentGrappleBall);
-        }
-
-        isSwinging = false;
-        isGrappling = false;
     }
 
     IEnumerator HandleGunShootAnimation()

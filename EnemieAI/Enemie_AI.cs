@@ -13,6 +13,7 @@ public class Enemy_AI : MonoBehaviour
 
     public float health = 100;
     public Image enemyHealthBar;
+    public Image enemyHealthBarBG;
     public GameObject damageTextPrefab;
 
     public PostProcessVolume postProcessVolume;
@@ -175,6 +176,7 @@ public class Enemy_AI : MonoBehaviour
         agent.enabled = false;
         animator.enabled = false;
         enemyHealthBar.enabled = false;
+        enemyHealthBarBG.enabled = false;
         if (deathParticlesBlood != null)
         {
             deathParticlesBlood.Play();

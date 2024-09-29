@@ -9,6 +9,7 @@ public class HealingPad : MonoBehaviour
     public float reactivationTime = 30f;
     public GameObject player;
     public TextMeshPro TimeLeft;
+    public AudioSource HealingPadTaken;
 
     private bool isActive = true;
 
@@ -16,18 +17,21 @@ public class HealingPad : MonoBehaviour
     {
         if (TimeLeft != null)
         {
+            TimeLeft.transform.position = transform.position + new Vector3(0, 2, 0);
             Vector3 directionToPlayer = player.transform.position - TimeLeft.transform.position;
-            directionToPlayer.y = 0; 
+            directionToPlayer.y = 0;
             Quaternion lookRotation = Quaternion.LookRotation(directionToPlayer);
             TimeLeft.transform.rotation = lookRotation * Quaternion.Euler(0, 180, 0);
         }
     }
+
 
     void OnTriggerEnter(Collider other)
     {
         if (other.gameObject == player && isActive)
         {
             HealPlayer();
+            HealingPadTaken.Play();
             StartCoroutine(DisableHealingPad());
         }
     }
